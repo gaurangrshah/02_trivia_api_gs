@@ -112,7 +112,6 @@ class QuestionView extends Component {
           url: `/questions/${id}/${action.toLowerCase()}`, //✅ TODO: update request URL
           type: "DELETE",
           success: (result) => {
-            console.log('🚧 deleted', result)
             this.getQuestions();
           },
           error: (error) => {

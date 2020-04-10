@@ -136,17 +136,19 @@ def create_app(test_config=None):
             abort(405)
 
         try:
-            question = Question.query.filter(
+            question = db.session.query(Question).filter(
                 Question.id == question_id).first()
+            db.session.delete(question)
+            db.session.commit()
 
-            question.delete()
             return jsonify({
                 'success': True
             })
         except:
             print('‼️ failed delete',)
+            db.session.rollback()
             abort(422)
-
+        db.close()
     '''
     @TODO:
     Create an endpoint to POST a new question,
@@ -177,7 +179,6 @@ def create_app(test_config=None):
             db.session.add(question)
             db.session.commit()
 
-            print('🕺🏼', question)
             return jsonify({
                 'success': True,
                 'status': 200
