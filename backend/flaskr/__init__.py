@@ -134,11 +134,20 @@ def create_app(test_config=None):
     @app.route('/questions/<int:question_id>/delete', methods=['DELETE'])
     def delete_question(question_id):
 
-        if not request.method == 'DELETE':
+        if not request.method == 'DELETE' and question_id:
             abort(405)
-        print('🚨', request, question_id)
 
-        return None
+        try:
+            question = Question.query.filter(
+                Question.id == question_id).first()
+
+            question.delete()
+            return jsonify({
+                'success': True
+            })
+        except:
+            print('‼️ failed delete',)
+            abort(422)
 
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
     @app.errorhandler(404)

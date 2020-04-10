@@ -3,6 +3,7 @@ from sqlalchemy import Column, String, Integer, create_engine
 from flask_sqlalchemy import SQLAlchemy
 import json
 
+SECRET_KEY = os.urandom(32)
 SQLALCHEMY_DATABASE_URI = 'postgres://bunty@localhost:5432/trivia'
 
 database_name = "trivia"
