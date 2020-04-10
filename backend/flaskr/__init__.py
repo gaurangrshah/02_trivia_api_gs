@@ -52,17 +52,16 @@ def create_app(test_config=None):
     @app.route('/categories', methods=['GET'])
     def get_categories():
         try:
-            if request.method != 'GET':
+            if not request.method == 'GET':
                 abort(405)
             # grab categories list
-            categories = Category.query.order_by('id').all()
+            all_categories = Category.query.order_by(Category.id).all()
             # return list of strings / type = category name
-            available_categories = [category.type
-                                    for category in categories]
-
+            categories = [category.type
+                          for category in all_categories]
             return jsonify({
                 'success': True,
-                'categories': available_categories,
+                'categories': categories,
                 'status_code': 200
             })
         except:
@@ -84,7 +83,6 @@ def create_app(test_config=None):
     def get_questions():
 
         if not request.method == 'GET' and request.method == 'POST':
-            print('🚧', 'aborting check method')
             abort(405)
 
         try:
@@ -149,6 +147,47 @@ def create_app(test_config=None):
             print('‼️ failed delete',)
             abort(422)
 
+    '''
+    @TODO:
+    Create an endpoint to POST a new question,
+    which will require the question and answer text,
+    category, and difficulty score.
+
+    TEST: When you submit a question on the "Add" tab,
+    the form will clear and the question will appear at the end of the last page
+    of the questions list in the "List" tab.
+    '''
+
+    @app.route('/questions/add', methods=['POST'])
+    def add_question():
+
+        if not request.method == 'POST':
+            abort(405)
+
+        try:
+            # submitted_question_values = request.data
+            data = request.get_json()
+            question = Question(
+                question=data['question'],
+                answer=data['answer'],
+                difficulty=data['difficulty'],
+                category=data['category'],
+            )
+
+            db.session.add(question)
+            db.session.commit()
+
+            print('🕺🏼', question)
+            return jsonify({
+                'success': True,
+                'status': 200
+            })
+        except:
+            db.session.rollback()
+            abort(422)
+        finally:
+            db.session.close
+
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
     @app.errorhandler(404)
     def not_found(e):
@@ -180,17 +219,6 @@ def create_app(test_config=None):
 
     return app
 
-
-'''
-  @TODO:
-  Create an endpoint to POST a new question,
-  which will require the question and answer text,
-  category, and difficulty score.
-
-  TEST: When you submit a question on the "Add" tab,
-  the form will clear and the question will appear at the end of the last page
-  of the questions list in the "List" tab.
-  '''
 
 '''
   @TODO:
