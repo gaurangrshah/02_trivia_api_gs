@@ -48,7 +48,7 @@ def create_app(test_config=None):
                              'GET,PATCH,POST,DELETE,OPTIONS')
         return response  # sets the response that is sent back to the client
 
-    # @TODO: Create an endpoint to handle GET requestsfor all available categories.
+    # ✅ @TODO: Create an endpoint to handle GET requestsfor all available categories.
     @app.route('/categories', methods=['GET'])
     def get_categories():
         try:
@@ -68,7 +68,7 @@ def create_app(test_config=None):
             abort(422)
 
     '''
-    @TODO:
+    ✅ @TODO:
     Create an endpoint to handle GET requests for questions,
     including pagination (every 10 questions).
     This endpoint should return a list of questions,
@@ -82,8 +82,8 @@ def create_app(test_config=None):
     @app.route('/questions', methods=['GET'])
     def get_questions():
 
-        if not request.method == 'GET' and request.method == 'POST':
-            abort(405)
+        # if not request.method == 'GET':
+        #     abort(405)
 
         try:
             # get category id or set default to 1
@@ -122,7 +122,7 @@ def create_app(test_config=None):
             print('⁉️', e)
             abort(422)
     '''
-    @TODO:
+    ✅ @TODO:
     Create an endpoint to DELETE question using a question ID.
 
     TEST: When you click the trash icon next to a question, the question will be removed.
@@ -150,7 +150,7 @@ def create_app(test_config=None):
             abort(422)
         db.close()
     '''
-    @TODO:
+    ✅ @TODO:
     Create an endpoint to POST a new question,
     which will require the question and answer text,
     category, and difficulty score.
@@ -189,6 +189,58 @@ def create_app(test_config=None):
         finally:
             db.session.close
 
+    '''
+    🚧 @TODO:
+    Create a POST endpoint to get questions based on a search term.
+    It should return any questions for whom the search term
+    is a substring of the question.
+
+    TEST: Search by any phrase. The questions list will update to include
+    only question that include that string within their question.
+    Try using the word "title" to start.
+    '''
+
+    @app.route('/questions', methods=['POST'])
+    def search_questions():
+        if not request.method == 'POST':
+            abort(404)
+        try:
+            data = request.get_json()
+            search_term = data.get('searchTerm')
+            questions = Question.query.filter(
+                Question.question.ilike('%{}%'.format(search_term))).all()
+
+            paginated_questions = paginate(request, questions)
+
+            return jsonify({
+                'success': True,
+                'status': 200,
+                'questions': paginated_questions,
+            })
+        except:
+            print('aborting search')
+            abort(422)
+
+    '''
+    @TODO:
+    Create a GET endpoint to get questions based on category.
+
+    TEST: In the "List" tab / main screen, clicking on one of the
+    categories in the left column will cause only questions of that
+    category to be shown.
+    '''
+    '''
+    @TODO:
+    Create a POST endpoint to get questions to play the quiz.
+    This endpoint should take category and previous question parameters
+    and return a random questions within the given category,
+    if provided, and that is not one of the previous questions.
+
+    TEST: In the "Play" tab, after a user selects "All" or a category,
+    one question at a time is displayed, the user is allowed to answer
+    and shown whether they were correct or not.
+    '''
+
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
     @app.errorhandler(404)
     def not_found(e):
@@ -219,35 +271,3 @@ def create_app(test_config=None):
         }), 500
 
     return app
-
-
-'''
-  @TODO:
-  Create a POST endpoint to get questions based on a search term.
-  It should return any questions for whom the search term
-  is a substring of the question.
-
-  TEST: Search by any phrase. The questions list will update to include
-  only question that include that string within their question.
-  Try using the word "title" to start.
-  '''
-
-'''
-  @TODO:
-  Create a GET endpoint to get questions based on category.
-
-  TEST: In the "List" tab / main screen, clicking on one of the
-  categories in the left column will cause only questions of that
-  category to be shown.
-  '''
-'''
-  @TODO:
-  Create a POST endpoint to get questions to play the quiz.
-  This endpoint should take category and previous question parameters
-  and return a random questions within the given category,
-  if provided, and that is not one of the previous questions.
-
-  TEST: In the "Play" tab, after a user selects "All" or a category,
-  one question at a time is displayed, the user is allowed to answer
-  and shown whether they were correct or not.
-  '''
