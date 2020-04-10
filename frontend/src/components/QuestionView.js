@@ -61,14 +61,14 @@ class QuestionView extends Component {
 
   getByCategory = (id) => {
     $.ajax({
-      url: `/categories/${id}/questions`, //TODO: update request URL
+      url: `/categories/${id}/questions`, //🚧 TODO: update request URL
       type: "GET",
       success: (result) => {
         this.setState({
-          questions: result.questions,
-          totalQuestions: result.total_questions,
-          currentCategory: result.current_category,
-          categories: result.categories
+          questions: result.questions || [],
+          totalQuestions: result.total_questions || 0,
+          currentCategory: result.current_category || '',
+          categories: result.categories || []
         })
         return;
       },
@@ -80,9 +80,8 @@ class QuestionView extends Component {
   }
 
   submitSearch = (searchTerm) => {
-    console.log('searching, front', searchTerm)
     $.ajax({
-      url: `/questions `, //🚧 TODO: update request URL
+      url: `/questions `, //✅ TODO: update request URL
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -92,7 +91,6 @@ class QuestionView extends Component {
       },
       crossDomain: true,
       success: (result) => {
-        console.log('result front', result)
         this.setState({
           questions: result.questions,
           totalQuestions: result.total_questions,

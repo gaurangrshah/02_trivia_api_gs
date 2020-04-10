@@ -121,6 +121,7 @@ def create_app(test_config=None):
         except Exception as e:
             print('⁉️', e)
             abort(422)
+
     '''
     ✅ @TODO:
     Create an endpoint to DELETE question using a question ID.
@@ -128,7 +129,6 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     '''
-
     @app.route('/questions/<int:question_id>/delete', methods=['DELETE'])
     def delete_question(question_id):
 
@@ -149,6 +149,7 @@ def create_app(test_config=None):
             db.session.rollback()
             abort(422)
         db.close()
+
     '''
     ✅ @TODO:
     Create an endpoint to POST a new question,
@@ -159,7 +160,6 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     '''
-
     @app.route('/questions/add', methods=['POST'])
     def add_question():
 
@@ -190,7 +190,7 @@ def create_app(test_config=None):
             db.session.close
 
     '''
-    🚧 @TODO:
+    ✅ @TODO:
     Create a POST endpoint to get questions based on a search term.
     It should return any questions for whom the search term
     is a substring of the question.
@@ -199,7 +199,6 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     '''
-
     @app.route('/questions', methods=['POST'])
     def search_questions():
         if not request.method == 'POST':
@@ -229,6 +228,37 @@ def create_app(test_config=None):
     categories in the left column will cause only questions of that
     category to be shown.
     '''
+    @app.route('/categories/<int:category_id>/questions', methods=['GET'])
+    def get_by_categories(category_id):
+
+        if not request.method == 'GET':
+            abort(405)
+
+        try:
+            curr_category_id = category_id + 1
+
+            curr_category = Category.query.filter(
+                Category.id == curr_category_id).one_or_none()
+            print(curr_category)
+
+            all_categories = Category.query.all()
+            questions = Question.query.filter(
+                Question.category == curr_category_id).all()
+
+            paginated_questions = paginate(request, questions)
+            print('getting question by category', type(paginated_questions))
+
+            return jsonify({
+                "success": True,
+                "status": 200,
+                "questions": paginated_questions,
+                "totalQuestions": len(paginated_questions),
+                "categories": [category.type for category in all_categories],
+                "currentCategory": curr_category.format(),
+            })
+        except:
+            abort(422)
+
     '''
     @TODO:
     Create a POST endpoint to get questions to play the quiz.
