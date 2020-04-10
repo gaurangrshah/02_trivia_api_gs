@@ -9,16 +9,30 @@ from models import setup_db, Question, Category
 QUESTIONS_PER_PAGE = 10
 
 
+def paginate(reqest, items):
+    # get page number from request params:
+    page = request.args.get('page', 1, type=int)
+    # set starting index (account for 0 index)
+    start = (page - 1) * QUESTIONS_PER_PAGE
+    # set ending index
+    end = start + QUESTIONS_PER_PAGE
+
+    # format
+    available_items = [item.format() for item in items]
+
+    # print('🚧', available_items[start:end])
+    return available_items[start:end]
+
+
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__)
 
     setup_db(app)
     db = SQLAlchemy()
+
     # @TODO: Delete the sample route after completing the TODOs ⁉️
-
     # ✅ @TODO: Set up CORS. Allow '*' for origins.
-
     cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
 
     # ✅ @TODO: Use the after_request decorator to set Access-Control-Allow
@@ -54,6 +68,78 @@ def create_app(test_config=None):
         except:
             abort(422)
 
+    '''
+    @TODO:
+    Create an endpoint to handle GET requests for questions,
+    including pagination (every 10 questions).
+    This endpoint should return a list of questions,
+    number of total questions, current category, categories.
+
+    TEST: At this point, when you start the application
+    you should see questions and categories generated,
+    ten questions per page and pagination at the bottom of the screen for three pages.
+    Clicking on the page numbers should update the questions.
+    '''
+    @app.route('/questions', methods=['GET'])
+    def get_questions():
+
+        if not request.method == 'GET' and request.method == 'POST':
+            print('🚧', 'aborting check method')
+            abort(405)
+
+        try:
+            # get category id or set default to 1
+            curr_category_id = request.args.get('category')
+            paginated_questions = []
+            if curr_category_id:
+                # Query for current category by curr_category_id
+                curr_category = Category.query.filter(
+                    Category.id == curr_category_id).one_or_none()
+                questions = Question.query.order_by('id').filter(
+                    Question.category == curr_category_id
+                ).all()
+                paginated_questions = paginate(request, questions)
+            else:
+                # if curr_category exists query for related questions:
+                questions = Question.query.all()
+                paginated_questions = paginate(request, questions)
+
+            # query for all categtories, and convert to ordered list of strings:
+            ordered_categories = Category.query.order_by('id').all()
+            categories_list = [category.type
+                               for category in ordered_categories]
+
+            if len(categories_list) == 0 | len(questions) == 0:
+                abort(404)
+
+            return jsonify({
+                'success': True,
+                'status_code': 200,
+                'questions': paginated_questions,
+                'total_questions': len(questions),
+                'current_category': curr_category.type if curr_category_id else None,
+                'categories': categories_list,
+            })
+        except Exception as e:
+            print('⁉️', e)
+            abort(422)
+    '''
+    @TODO:
+    Create an endpoint to DELETE question using a question ID.
+
+    TEST: When you click the trash icon next to a question, the question will be removed.
+    This removal will persist in the database and when you refresh the page.
+    '''
+
+    @app.route('/questions/<int:question_id>/delete', methods=['DELETE'])
+    def delete_question(question_id):
+
+        if not request.method == 'DELETE':
+            abort(405)
+        print('🚨', request, question_id)
+
+        return None
+
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
     @app.errorhandler(404)
     def not_found(e):
@@ -85,30 +171,6 @@ def create_app(test_config=None):
 
     return app
 
-
-# CORS Headers
-
-
-'''
-  @TODO:
-  Create an endpoint to handle GET requests for questions,
-  including pagination (every 10 questions).
-  This endpoint should return a list of questions,
-  number of total questions, current category, categories.
-
-  TEST: At this point, when you start the application
-  you should see questions and categories generated,
-  ten questions per page and pagination at the bottom of the screen for three pages.
-  Clicking on the page numbers should update the questions.
-  '''
-
-'''
-  @TODO:
-  Create an endpoint to DELETE question using a question ID.
-
-  TEST: When you click the trash icon next to a question, the question will be removed.
-  This removal will persist in the database and when you refresh the page.
-  '''
 
 '''
   @TODO:
