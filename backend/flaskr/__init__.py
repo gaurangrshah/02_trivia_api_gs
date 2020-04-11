@@ -273,36 +273,45 @@ def create_app(test_config=None):
     '''
     @app.route('/quizzes', methods=['POST'])
     def start_quiz():
-        print(request)
-        if not request.method == 'POST':
-            abort(405)
-
         try:
             data = request.get_json()
 
-            previous_questions = data['previous_questions']
-            quiz_category = data['quiz_category']
-            print(quiz_category)
-            quiz_category_id = int(quiz_category['id']) + 1
-            questions = (Question.query.filter_by(category=quiz_category_id).filter(
-                Question.id.notin_(previous_questions)).all())
-
-            if len(previous_questions) == len(questions):
-                print('game over')
-                return jsonify({
-                    'success': True,
-                    'question': None
-                }), 200
-
-            question = random.choice(questions).format()
-            print(question)
+            category_id = int(data['quiz_category']['id'])
+            category = Category.query.get(category_id)
+            previous_questions = data["previous_questions"]
+            if not category == None:
+                print('❶ category exists', category)
+                if "previous_questions" in data and len(previous_questions) > 0:
+                    questions = Question.query.filter(Question.id.notin_(
+                        previous_questions), Question.category == category.id).all()
+                    print('❷ previous_questions exist', questions)
+                else:
+                    questions = Question.query.filter(
+                        Question.category == category.id).all()
+                    print('❷ previous_questions DO NOT exist', questions)
+            else:
+                print('❶ category DOES NOT exist', category)
+                if "previous_questions" in data and len(previous_questions) > 0:
+                    questions = Question.query.filter(
+                        Question.id.notin_(previous_questions)).all()
+                    print('❸ previous_questions available', questions)
+                else:
+                    questions = Question.query.all()
+                    print('❸ previous_questions available', questions)
+            max = len(questions) - 1
+            if max > 0:
+                question = questions[random.randint(0, max)].format()
+                print('❹ previous_questions available', question)
+            else:
+                question = False
+                print('❹ previous_questions NOT available', question)
             return jsonify({
-                'success': True,
-                'question': question,
-                'previous_questions': previous_questions,
-            }), 200
-        except Exception as e:
-            print('exception', e)
+                "success": True,
+                "question": question
+            })
+        except:
+            print('❺ exception')
+            abort(500, "An error occured while trying to load the next question")
 
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
     @app.errorhandler(404)
