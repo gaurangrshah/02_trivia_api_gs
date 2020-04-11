@@ -3,6 +3,7 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
+from sqlalchemy.sql.expression import func
 
 from models import setup_db, Question, Category
 
@@ -221,7 +222,7 @@ def create_app(test_config=None):
             abort(422)
 
     '''
-    @TODO:
+    ✅ @TODO:
     Create a GET endpoint to get questions based on category.
 
     TEST: In the "List" tab / main screen, clicking on one of the
@@ -260,7 +261,7 @@ def create_app(test_config=None):
             abort(422)
 
     '''
-    @TODO:
+    🚧 @TODO:
     Create a POST endpoint to get questions to play the quiz.
     This endpoint should take category and previous question parameters
     and return a random questions within the given category,
@@ -270,6 +271,38 @@ def create_app(test_config=None):
     one question at a time is displayed, the user is allowed to answer
     and shown whether they were correct or not.
     '''
+    @app.route('/quizzes', methods=['POST'])
+    def start_quiz():
+        print(request)
+        if not request.method == 'POST':
+            abort(405)
+
+        try:
+            data = request.get_json()
+
+            previous_questions = data['previous_questions']
+            quiz_category = data['quiz_category']
+            print(quiz_category)
+            quiz_category_id = int(quiz_category['id']) + 1
+            questions = (Question.query.filter_by(category=quiz_category_id).filter(
+                Question.id.notin_(previous_questions)).all())
+
+            if len(previous_questions) == len(questions):
+                print('game over')
+                return jsonify({
+                    'success': True,
+                    'question': None
+                }), 200
+
+            question = random.choice(questions).format()
+            print(question)
+            return jsonify({
+                'success': True,
+                'question': question,
+                'previous_questions': previous_questions,
+            }), 200
+        except Exception as e:
+            print('exception', e)
 
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
     @app.errorhandler(404)
