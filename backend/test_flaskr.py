@@ -25,6 +25,12 @@ class TriviaTestCase(unittest.TestCase):
             'category': 1
         }
 
+        self.wrong_question = {
+            'question': 'Will this work?',
+            'answer': 'This should not work',
+            'category': 9,
+        }
+
         # binds the app to the current context
         with self.app.app_context():
             self.db = SQLAlchemy()
@@ -110,19 +116,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Not allowed')
 
-    # def test_create_question(self):
-    #     res = self.client().create('/questions', example_question)
-    #     data = json.loads(res.data)
+    def test_create_question_with_invalid_parameteres(self):
+        res = self.client().create('/questions', wrong_question)
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-
-    # def test_create_question_with_invalid_parameteres(self):
-    #     res = self.client().create('/questions', wrong_question)
-    #     data = json.loads(res.data)
-
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['message'], 'Not processable')
 
 
 # Make the tests conveniently executable

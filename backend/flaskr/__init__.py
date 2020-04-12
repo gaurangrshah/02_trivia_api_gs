@@ -189,6 +189,9 @@ def create_app(test_config=None):
                 category=data['category'],
             )
 
+            if not question.question | question.answer | question.difficulty | question.category:
+                abort(422)
+
             db_match = db.session.query(Question).filter_by(
                 question=question.question).one_or_none()
 
