@@ -189,16 +189,11 @@ def create_app(test_config=None):
                 category=data['category'],
             )
 
-            if not question.question and question.answer and question.difficulty and question.category:
-                print('cannot create, missing field')
-                abort(422)
-
             db_match = db.session.query(Question).filter_by(
                 question=question.question).one_or_none()
 
             print(db_match)
             if db_match is None:
-                print('adding...')
                 db.session.add(question)
                 db.session.commit()
                 return jsonify({
@@ -206,14 +201,12 @@ def create_app(test_config=None):
                     'status': 200
                 })
             else:
-                print('setting fail, found db match')
                 return jsonify({
                     'success': False,
                     'status': 404,
                     'message': 'Not found'
                 })
         except:
-            print('testing abort')
             db.session.rollback()
             abort(422)
         finally:
@@ -229,15 +222,23 @@ def create_app(test_config=None):
     only question that include that string within their question.
     Try using the word "title" to start.
     '''
-    @app.route('/questions', methods=['POST'])
+    @app.route('/questions/search', methods=['POST'])
     def search_questions():
         if not request.method == 'POST':
             abort(404)
+
+        data = request.get_json()
+        search_term = data.get('searchTerm')
+
+        if not search_term:
+            abort(422)
+
         try:
-            data = request.get_json()
-            search_term = data.get('searchTerm')
             questions = Question.query.filter(
                 Question.question.ilike('%{}%'.format(search_term))).all()
+
+            if not questions:
+                abort(422)
 
             paginated_questions = paginate(request, questions)
 
@@ -245,9 +246,9 @@ def create_app(test_config=None):
                 'success': True,
                 'status': 200,
                 'questions': paginated_questions,
+                'total_questions':  len(paginated_questions)
             })
         except:
-            print('aborting search')
             abort(422)
 
     '''
@@ -269,22 +270,20 @@ def create_app(test_config=None):
 
             curr_category = Category.query.filter(
                 Category.id == curr_category_id).one_or_none()
-            print(curr_category)
 
             all_categories = Category.query.all()
             questions = Question.query.filter(
                 Question.category == curr_category_id).all()
 
             paginated_questions = paginate(request, questions)
-            print('getting question by category', type(paginated_questions))
 
             return jsonify({
                 "success": True,
                 "status": 200,
                 "questions": paginated_questions,
-                "totalQuestions": len(paginated_questions),
+                "total_questions": len(paginated_questions),
                 "categories": [category.type for category in all_categories],
-                "currentCategory": curr_category.format(),
+                "current_category": curr_category.format(),
             })
         except:
             abort(422)
@@ -306,10 +305,12 @@ def create_app(test_config=None):
         if not request.method == 'POST':
             abort(405)
 
+        data = request.get_json()
+        category_id = int(data['quiz_category']['id'])
+        if not category_id:
+            abort(500)
         try:
-            data = request.get_json()
 
-            category_id = int(data['quiz_category']['id'])
             category = Category.query.get(category_id)
             previous_questions = data["previous_questions"]
             if not category == None:
@@ -331,11 +332,12 @@ def create_app(test_config=None):
             else:
                 question = False
             return jsonify({
+                'status': 200,
                 "success": True,
                 "question": question
             })
         except:
-            abort(500, "An error occured while trying to load the next question")
+            abort(500, 'An error occured while trying to load the next question')
 
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
     @app.errorhandler(404)
