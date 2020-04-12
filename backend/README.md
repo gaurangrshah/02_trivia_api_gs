@@ -355,5 +355,25 @@ psql trivia_test < trivia.psql
 python test_flaskr.py
 ```
 
-- **NOTE**:  Please be sure to drop the db and create a new db as per the instructions above, between each test run. 
+> - **NOTE**:  Please be sure to drop the db and create a new db as per the instructions above, between each test run, you may need to stop and start the postgres service if you see any errors
+>
+> ```shell
+> brew services stop postgresql
+> ```
+>
+> ```shell
+> brew services start postgresql
+> ```
+>
+> if the above method does not work, you can try:
+>
+> ```shell
+> pg_ctl -D /usr/local/var/postgres stop
+> ```
+>
+> ```shell
+> pg_ctl -D /usr/local/var/postgres start
+> ```
+
+
 
