@@ -76,29 +76,29 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Not processable')
 
-    # # -----------------------------------------------------------------------
-    # def test_create_question(self):
-    #     res = self.client().post('/questions', json=self.example_question)
-    #     data = json.loads(res.data)
+    # -----------------------------------------------------------------------
+    def test_create_question(self):
+        res = self.client().post('/questions', json=self.example_question)
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
 
-    # def test_create_duplicate_question(self):
-    #     res = self.client().post('/question', json=self.example_question)
-    #     data = json.loads(res.data)
+    def test_create_duplicate_question(self):
+        res = self.client().post('/question', json=self.example_question)
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 404)
-    #     self.assertEqual(data['success'], False)
-    #     self.assertEqual(data['message'], 'Not found')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Not found')
 
-    # def test_delete_question(self):
-    #     res = self.client().delete('/questions/51')  # update value after first run
-    #     data = json.loads(res.data)
+    def test_delete_question(self):
+        res = self.client().delete('/questions/24')  # update value after first run
+        data = json.loads(res.data)
 
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data['success'], True)
-    # # -----------------------------------------------------------------------
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data['success'], True)
+    # -----------------------------------------------------------------------
 
     def test_delete_question_with_invalid_id(self):
         res = self.client().delete('/questions/1000')
