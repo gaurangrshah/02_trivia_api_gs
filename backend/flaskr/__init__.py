@@ -189,7 +189,8 @@ def create_app(test_config=None):
                 category=data['category'],
             )
 
-            if not question.question | question.answer | question.difficulty | question.category:
+            if not question.question and question.answer and question.difficulty and question.category:
+                print('cannot create, missing field')
                 abort(422)
 
             db_match = db.session.query(Question).filter_by(

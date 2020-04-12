@@ -47,9 +47,6 @@ class TriviaTestCase(unittest.TestCase):
     Write at least one test for each test for successful operation and for expected errors.
     """
 
-    # wrong_question = jsonify({'question': 'Where is Waldo?',
-    #                           'answer': 'Here', 'difficulty': None, 'category': 1})
-
     def test_get_categories(self):
         res = self.client().get('/categories')
         data = json.loads(res.data)
@@ -89,7 +86,7 @@ class TriviaTestCase(unittest.TestCase):
     #     res = self.client().post('/question', json=self.example_question)
     #     data = json.loads(res.data)
 
-    #     self.assertAlmostEqual(res.status_code, 404)
+    #     self.assertEqual(res.status_code, 404)
     #     self.assertEqual(data['success'], False)
     #     self.assertEqual(data['message'], 'Not found')
 
@@ -116,12 +113,12 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Not allowed')
 
-    def test_create_question_with_invalid_parameteres(self):
-        res = self.client().create('/questions', wrong_question)
+    def test_create_question_with_invalid_args(self):
+        res = self.client().post('/question', json=self.wrong_question)
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 422)
-        self.assertEqual(data['message'], 'Not processable')
+        self.assertEqual(res.status_code, 404)
+        self.assertEqual(data['message'], 'Not found')
 
 
 # Make the tests conveniently executable
