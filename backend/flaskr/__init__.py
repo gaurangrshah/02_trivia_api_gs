@@ -34,7 +34,7 @@ def create_app(test_config=None):
 
     # @TODO: Delete the sample route after completing the TODOs ⁉️
     # ✅ @TODO: Set up CORS. Allow '*' for origins.
-    cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(app)
 
     # ✅ @TODO: Use the after_request decorator to set Access-Control-Allow
 
@@ -83,17 +83,22 @@ def create_app(test_config=None):
     @app.route('/questions', methods=['GET'])
     def get_questions():
 
-        # if not request.method == 'GET':
-        #     abort(405)
+        if not request.method == 'GET':
+            abort(405)
 
         try:
             # get category id or set default to 1
-            curr_category_id = request.args.get('category')
+            curr_category_id = request.args.get('category', 1, type=int)
             paginated_questions = []
             if curr_category_id:
                 # Query for current category by curr_category_id
                 curr_category = Category.query.filter(
                     Category.id == curr_category_id).one_or_none()
+
+                if curr_category is None:
+                    # if current category does not exist, abort
+                    abort(404)
+
                 questions = Question.query.order_by('id').filter(
                     Question.category == curr_category_id
                 ).all()
@@ -116,7 +121,7 @@ def create_app(test_config=None):
                 'status_code': 200,
                 'questions': paginated_questions,
                 'total_questions': len(questions),
-                'current_category': curr_category.type if curr_category_id else None,
+                'current_category': curr_category.type,
                 'categories': categories_list,
             })
         except Exception as e:
@@ -130,10 +135,10 @@ def create_app(test_config=None):
     TEST: When you click the trash icon next to a question, the question will be removed.
     This removal will persist in the database and when you refresh the page.
     '''
-    @app.route('/questions/<int:question_id>/delete', methods=['DELETE'])
+    @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
-
         if not request.method == 'DELETE' and question_id:
+            print('running delete', question_id)
             abort(405)
 
         try:
@@ -148,8 +153,9 @@ def create_app(test_config=None):
         except:
             print('‼️ failed delete',)
             db.session.rollback()
-            abort(422)
-        db.close()
+            abort(400)
+        finally:
+            db.session.close()
 
     '''
     ✅ @TODO:
@@ -161,14 +167,12 @@ def create_app(test_config=None):
     the form will clear and the question will appear at the end of the last page
     of the questions list in the "List" tab.
     '''
-    @app.route('/questions/add', methods=['POST'])
+    @app.route('/questions', methods=['POST'])
     def add_question():
-
         if not request.method == 'POST':
             abort(405)
 
         try:
-            # submitted_question_values = request.data
             data = request.get_json()
             question = Question(
                 question=data['question'],
@@ -177,13 +181,19 @@ def create_app(test_config=None):
                 category=data['category'],
             )
 
-            db.session.add(question)
-            db.session.commit()
-
-            return jsonify({
-                'success': True,
-                'status': 200
-            })
+            db_match = db.session.query(Question).filter_by(
+                question=question.question).one_or_none()
+            print(db_match)
+            if db_match is None:
+                print('adding...')
+                db.session.add(question)
+                db.session.commit()
+                return jsonify({
+                    'success': True,
+                    'status': 200
+                })
+            else:
+                abort(422)
         except:
             db.session.rollback()
             abort(422)
@@ -273,6 +283,10 @@ def create_app(test_config=None):
     '''
     @app.route('/quizzes', methods=['POST'])
     def start_quiz():
+
+        if not request.method == 'POST':
+            abort(405)
+
         try:
             data = request.get_json()
 
@@ -280,37 +294,28 @@ def create_app(test_config=None):
             category = Category.query.get(category_id)
             previous_questions = data["previous_questions"]
             if not category == None:
-                print('❶ category exists', category)
                 if "previous_questions" in data and len(previous_questions) > 0:
                     questions = Question.query.filter(Question.id.notin_(
                         previous_questions), Question.category == category.id).all()
-                    print('❷ previous_questions exist', questions)
                 else:
                     questions = Question.query.filter(
                         Question.category == category.id).all()
-                    print('❷ previous_questions DO NOT exist', questions)
             else:
-                print('❶ category DOES NOT exist', category)
                 if "previous_questions" in data and len(previous_questions) > 0:
                     questions = Question.query.filter(
                         Question.id.notin_(previous_questions)).all()
-                    print('❸ previous_questions available', questions)
                 else:
                     questions = Question.query.all()
-                    print('❸ previous_questions available', questions)
             max = len(questions) - 1
             if max > 0:
                 question = questions[random.randint(0, max)].format()
-                print('❹ previous_questions available', question)
             else:
                 question = False
-                print('❹ previous_questions NOT available', question)
             return jsonify({
                 "success": True,
                 "question": question
             })
         except:
-            print('❺ exception')
             abort(500, "An error occured while trying to load the next question")
 
     # ✅ @TODO: Create error handlers for all expected errors including 404 and 422.
@@ -330,6 +335,7 @@ def create_app(test_config=None):
 
     @app.errorhandler(422)
     def not_processable(e):
+        print(e)
         return jsonify({
             'success': False,
             'message': 'Not processable'

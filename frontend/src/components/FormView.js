@@ -33,9 +33,9 @@ class FormView extends Component {
 
   submitQuestion = (event) => {
     event.preventDefault();
-    console.log(this.state)
+    // console.log('form state', this.state)
     $.ajax({
-      url: '/questions/add', //✅ TODO: update request URL
+      url: '/questions', //✅ TODO: update request URL
       type: "POST",
       dataType: 'json',
       contentType: 'application/json',
@@ -55,6 +55,7 @@ class FormView extends Component {
       },
       error: (error) => {
         alert('Unable to add question. Please try your request again')
+        document.getElementById("add-question-form").reset();
         return;
       }
     })

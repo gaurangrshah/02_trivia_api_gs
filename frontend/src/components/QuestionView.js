@@ -109,7 +109,7 @@ class QuestionView extends Component {
     if (action === 'DELETE') {
       if (window.confirm('are you sure you want to delete the question?')) {
         $.ajax({
-          url: `/questions/${id}/${action.toLowerCase()}`, //✅ TODO: update request URL
+          url: `/questions/${id}`, //✅ TODO: update request URL
           type: "DELETE",
           success: (result) => {
             this.getQuestions();
@@ -153,7 +153,6 @@ class QuestionView extends Component {
           <div className="pagination-menu">
             {this.createPagination()}
           </div>
-          {JSON.stringify({ page: this.state.page, currentCategory: this.state.currentCategory, categories: this.state.categories, questions: this.state.questions, totalQuestions: this.state.totalQuestions })}
         </div>
 
       </div>
