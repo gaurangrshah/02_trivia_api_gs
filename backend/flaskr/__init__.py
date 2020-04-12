@@ -137,19 +137,27 @@ def create_app(test_config=None):
     '''
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_question(question_id):
-        if not request.method == 'DELETE' and question_id:
-            print('running delete', question_id)
+        if not request.method == 'DELETE':
             abort(405)
+        if not question_id:
+            abort(400)
 
         try:
             question = db.session.query(Question).filter(
                 Question.id == question_id).first()
-            db.session.delete(question)
-            db.session.commit()
+            if question:
+                db.session.delete(question)
+                db.session.commit()
 
-            return jsonify({
-                'success': True
-            })
+                return jsonify({
+                    'status': 200,
+                    'success': True
+                })
+            else:
+                return jsonify({
+                    'status': 405,
+                    'message': 'Not Allowed'
+                })
         except:
             print('‼️ failed delete',)
             db.session.rollback()
@@ -183,6 +191,7 @@ def create_app(test_config=None):
 
             db_match = db.session.query(Question).filter_by(
                 question=question.question).one_or_none()
+
             print(db_match)
             if db_match is None:
                 print('adding...')
@@ -193,8 +202,14 @@ def create_app(test_config=None):
                     'status': 200
                 })
             else:
-                abort(422)
+                print('setting fail, found db match')
+                return jsonify({
+                    'success': False,
+                    'status': 404,
+                    'message': 'Not found'
+                })
         except:
+            print('testing abort')
             db.session.rollback()
             abort(422)
         finally:
