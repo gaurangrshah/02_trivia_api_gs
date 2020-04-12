@@ -45,6 +45,8 @@ class TriviaTestCase(unittest.TestCase):
     """
     TODO
     Write at least one test for each test for successful operation and for expected errors.
+    - UPDATE README with Installation instructions
+    - document endpoints in readme
     """
 
     def test_get_categories(self):
@@ -74,13 +76,13 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], 'Not processable')
 
+    # # -----------------------------------------------------------------------
     # def test_create_question(self):
     #     res = self.client().post('/questions', json=self.example_question)
     #     data = json.loads(res.data)
 
     #     self.assertEqual(res.status_code, 200)
     #     self.assertEqual(data['success'], True)
-    #     # print('complete')
 
     # def test_create_duplicate_question(self):
     #     res = self.client().post('/question', json=self.example_question)
@@ -91,19 +93,20 @@ class TriviaTestCase(unittest.TestCase):
     #     self.assertEqual(data['message'], 'Not found')
 
     # def test_delete_question(self):
-    #     res = self.client().delete('/questions/47')  # update value after first run
+    #     res = self.client().delete('/questions/51')  # update value after first run
     #     data = json.loads(res.data)
 
     #     self.assertEqual(res.status_code, 200)
     #     self.assertEqual(data['success'], True)
+    # # -----------------------------------------------------------------------
 
     def test_delete_question_with_invalid_id(self):
-        res = self.client().delete('/questions')
+        res = self.client().delete('/questions/1000')
         data = json.loads(res.data)
 
-        self.assertEqual(res.status_code, 405)
+        self.assertEqual(res.status_code, 422)
         self.assertEqual(data['success'], False)
-        self.assertEqual(data['message'], 'Not allowed')
+        self.assertEqual(data['message'], 'Not processable')
 
     def test_delete_question_with_no_id(self):
         res = self.client().delete('/questions')

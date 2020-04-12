@@ -33,7 +33,6 @@ class FormView extends Component {
 
   submitQuestion = (event) => {
     event.preventDefault();
-    // console.log('form state', this.state)
     $.ajax({
       url: '/questions', //✅ TODO: update request URL
       type: "POST",

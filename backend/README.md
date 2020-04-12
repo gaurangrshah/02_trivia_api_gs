@@ -89,8 +89,264 @@ GET '/categories'
 
 ```
 
+# API
+
+This API is currently under development and can be run locally via:
+
+```shell
+curl http://127.0.0.1:5000/<endpoint>
+```
+
+
+
+## Endpoints
+
+---
+
+### GET /categories
+
+**General**:
+
+- Returns a list of strings representing all available category types
+
+> #### Statuses:
+>
+> | Status | Message            | Reason                               |
+> | ------ | ------------------ | ------------------------------------ |
+> | 200    | Success            | if categories are found              |
+> | 405    | Method Not Allowed | if incorrect request.method provided |
+> | 422    | Not processable    | for any other errors                 |
+
+### Sample:
+
+```json
+["Science", "Art", "Geography", "History", "Entertainment", "Sports"]
+```
+
+---
+
+
+
+### GET /questions
+
+**General**:
+
+- Returns paginated list of dictionaries representing questions, based on category provided.
+- if a category is provided, it is used to find the `category_id`, else defaults to `1`
+
+> #### Statuses:
+>
+> | Status | Message         | Reason                                                |
+> | ------ | --------------- | ----------------------------------------------------- |
+> | 200    | Success         | if questions are found                                |
+> | 405    | Not allowed     | if incorrect request.method provided                  |
+> | 404    | Not found       | if category_id is invalid or if max questions reached |
+> | 422    | Not processable | for all other errors                                  |
+
+
+
+### Sample:
+
+```json
+{"categories: ["Science","Art","Geography","History","Entertainment","Sports"],
+ "current_category":"Science",
+ "questions":[{
+ "answer":"Alexander Fleming",
+ "category":1,
+ "difficulty":3,
+ "id":21,
+ "question":
+ "Who discovered penicillin?"
+},{
+  "answer":"Blood",
+  "category":1,
+  "difficulty":4,
+  "id":22,
+  "question":"Hematology is a branch of medicine involving the study of what?"
+}],
+"total_questions":3
+}
+```
+
+---
+
+
+
+### DELETE /questions/<int: question_id>
+
+**General**:
+
+- Returns status of 200 if question is successfully deleted
+- takes one argument, which is an `int` that represents the `question_id`
+
+> #### Statuses:
+>
+> | Status | Message         | Reason                                                       |
+> | ------ | --------------- | ------------------------------------------------------------ |
+> | 200    | Success         | if question is deleted successfully                          |
+> | 405    | Not allowed     | if incorrect request.method provided or if invalid question_id |
+> | 404    | Not found       | if question_id not found                                     |
+> | 422    | Not processable | for all other errors                                         |
+
+### Sample:
+
+```json
+{"status":200,"success":true}
+```
+
+---
+
+
+
+### POST /questions
+
+**General**:
+
+- Returns status of 200 if successful and status 404 if question already exists, or status 422 for all other errors
+
+- requires an object with the following shape: 
+
+  - ```
+    {'question': str, 'answer': string, difficult: int, `category`: int}
+    ```
+
+    
+
+> #### Statuses:
+>
+> | Status | Message         | Reason                               |
+> | ------ | --------------- | ------------------------------------ |
+> | 200    | Success         | if question is added successfully    |
+> | 405    | Not allowed     | if incorrect request.method provided |
+> | 404    | Not found       | if question already exists           |
+> | 422    | Not processable | for all other errors                 |
+
+### Sample:
+
+```json
+{"status":200,"success":true}
+```
+
+---
+
+
+
+### POST /questions/search
+
+**General**:
+
+- Returns a list of paginated objects representing all questions that include the provided `search_term`
+- takes a single argument, which is a `string` that represents a `search_term`
+
+> #### Statuses:
+>
+> | Status | Message         | Reason                           |
+> | ------ | --------------- | -------------------------------- |
+> | 200    | Success         | if `search_term` has any matches |
+> | 405    | Not allowed     | if incorrect request.method      |
+> | 422    | Not processable | for all other errors             |
+
+### Sample:
+
+```json
+{
+  "questions":[{
+    "answer":"Alexander Fleming",
+    "category":1,
+    "difficulty":3,
+    "id":21,"question":
+    "Who discovered penicillin?"
+  }],
+  "total_questions":1
+}
+```
+
+---
+
+
+
+### GET /questions/<int: category_id>/questions
+
+**General**:
+
+- Returns list of questions based on provided category_id
+- requires an `int` representing the `category_id`
+
+> #### Statuses:
+>
+> | Status | Message         | Reason                                                 |
+> | ------ | --------------- | ------------------------------------------------------ |
+> | 200    | Success         | if successfully found questions matching `category_id` |
+> | 405    | Not allowed     | if incorrect request.method provided                   |
+> | 422    | Not processable | for all other errors                                   |
+>
+> 
+
+### Sample:
+
+```json
+{"categories":["Science","Art","Geography","History","Entertainment","Sports"],
+ "current_category":{
+   "id":4,
+   "type":"History"
+ },
+ "questions": [{
+   "answer":"George Washington Carver",
+   "category":4,
+   "difficulty":2,
+   "id":12,
+   "question":"Who invented Peanut Butter?"
+ },{
+   "answer":"Scarab",
+   "category":4,
+   "difficulty":4,
+   "id":23,
+   "question":"Which dung beetle was worshipped by the ancient Egyptians?"
+ }],
+ "total_questions":2
+}
+```
+
+---
+
+
+
+### POST /quizzes
+
+**General**:
+
+- Returns a single random question from paginated list of all available questions pertaining to current category
+- requires one argument, which is an `int` representing the `category_id`
+
+> #### Statuses:
+>
+> | Status | Message         | Reason                                                 |
+> | ------ | --------------- | ------------------------------------------------------ |
+> | 200    | Success         | if question is added successfully                      |
+> | 405    | Not allowed     | if incorrect request.method provided                   |
+> | 422    | Not processable | for all other errors                                   |
+> | 500    | Server error    | occurs when the next question in list cannot be loaded |
+
+### Sample:
+
+```json
+{"question":{
+  "answer":"Alexander Fleming",
+  "category":1,
+  "difficulty":3,
+  "id":21,
+  "question":"Who discovered penicillin?"
+}}
+```
+
+---
+
+
+
+
 
 ## Testing
+
 To run the tests, run
 ```
 dropdb trivia_test
@@ -98,3 +354,6 @@ createdb trivia_test
 psql trivia_test < trivia.psql
 python test_flaskr.py
 ```
+
+- **NOTE**:  Please be sure to drop the db and create a new db as per the instructions above, between each test run. 
+
